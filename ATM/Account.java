@@ -1,3 +1,6 @@
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -87,12 +90,12 @@ public class Account {
 		boolean end = false;
 		while (!end) {
 			try {
-				System.out.println("\nCurrent Checkings Account Balance: " + moneyFormat.format(checkingBalance));
-				System.out.print("\nAmount you want to withdraw from Checkings Account: ");
+				System.out.println("\nCurrent Checking Account Balance: " + moneyFormat.format(checkingBalance));
+				System.out.print("\nAmount you want to withdraw from Checking Account: ");
 				double amount = input.nextDouble();
 				if ((checkingBalance - amount) >= 0 && amount >= 0) {
 					calcCheckingWithdraw(amount);
-					System.out.println("\nCurrent Checkings Account Balance: " + moneyFormat.format(checkingBalance));
+					System.out.println("\nCurrent Checking Account Balance: " + moneyFormat.format(checkingBalance));
 					end = true;
 				} else {
 					System.out.println("\nBalance Cannot be Negative.");
@@ -104,7 +107,7 @@ public class Account {
 		}
 	}
 
-	public void getsavingWithdrawInput() {
+	public void getSavingWithdrawInput() {
 		boolean end = false;
 		while (!end) {
 			try {
@@ -129,12 +132,12 @@ public class Account {
 		boolean end = false;
 		while (!end) {
 			try {
-				System.out.println("\nCurrent Checkings Account Balance: " + moneyFormat.format(checkingBalance));
-				System.out.print("\nAmount you want to deposit from Checkings Account: ");
+				System.out.println("\nCurrent Checking Account Balance: " + moneyFormat.format(checkingBalance));
+				System.out.print("\nAmount you want to deposit from Checking Account: ");
 				double amount = input.nextDouble();
 				if ((checkingBalance + amount) >= 0 && amount >= 0) {
 					calcCheckingDeposit(amount);
-					System.out.println("\nCurrent Checkings Account Balance: " + moneyFormat.format(checkingBalance));
+					System.out.println("\nCurrent Checking Account Balance: " + moneyFormat.format(checkingBalance));
 					end = true;
 				} else {
 					System.out.println("\nBalance Cannot Be Negative.");
@@ -172,22 +175,22 @@ public class Account {
 		boolean end = false;
 		while (!end) {
 			try {
-				if (accType.equals("Checkings")) {
-					System.out.println("\nSelect an account you wish to tranfers funds to:");
+				if (accType.equals("Checking")) {
+					System.out.println("\nSelect an account you wish to transfer funds to:");
 					System.out.println("1. Savings");
 					System.out.println("2. Exit");
 					System.out.print("\nChoice: ");
 					int choice = input.nextInt();
 					switch (choice) {
 					case 1:
-						System.out.println("\nCurrent Checkings Account Balance: " + moneyFormat.format(checkingBalance));
+						System.out.println("\nCurrent Checking Account Balance: " + moneyFormat.format(checkingBalance));
 						System.out.print("\nAmount you want to deposit into your Savings Account: ");
 						double amount = input.nextDouble();
 						if ((savingBalance + amount) >= 0 && (checkingBalance - amount) >= 0 && amount >= 0) {
 							calcCheckTransfer(amount);
 							System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingBalance));
 							System.out.println(
-									"\nCurrent Checkings Account Balance: " + moneyFormat.format(checkingBalance));
+									"\nCurrent Checking Account Balance: " + moneyFormat.format(checkingBalance));
 							end = true;
 						} else {
 							System.out.println("\nBalance Cannot Be Negative.");
@@ -200,8 +203,8 @@ public class Account {
 						break;
 					}
 				} else if (accType.equals("Savings")) {
-					System.out.println("\nSelect an account you wish to tranfers funds to: ");
-					System.out.println("1. Checkings");
+					System.out.println("\nSelect an account you wish to transfer funds to: ");
+					System.out.println("1. Checking");
 					System.out.println("2. Exit");
 					System.out.print("\nChoice: ");
 					int choice = input.nextInt();
@@ -212,7 +215,7 @@ public class Account {
 						double amount = input.nextDouble();
 						if ((checkingBalance + amount) >= 0 && (savingBalance - amount) >= 0 && amount >= 0) {
 							calcSavingTransfer(amount);
-							System.out.println("\nCurrent checkings account balance: " + moneyFormat.format(checkingBalance));
+							System.out.println("\nCurrent checking account balance: " + moneyFormat.format(checkingBalance));
 							System.out.println("\nCurrent savings account balance: " + moneyFormat.format(savingBalance));
 							end = true;
 						} else {
@@ -231,5 +234,12 @@ public class Account {
 				input.next();
 			}
 		}
+	}
+
+	public static void writeToFile(int custNo, int pin, int checking, int saving) throws IOException {
+		BufferedWriter out = new BufferedWriter(new FileWriter("users.txt"));
+		out.write(custNo+ "#" +pin+ "#" +checking+ "#" +saving);
+		out.newLine();
+		out.close();
 	}
 }
