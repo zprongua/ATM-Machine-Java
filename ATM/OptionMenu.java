@@ -1,6 +1,13 @@
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.*;
 
@@ -8,9 +15,8 @@ public class OptionMenu {
 	Scanner menuInput = new Scanner(System.in);
 	DecimalFormat moneyFormat = new DecimalFormat("'$'###,##0.00");
 	HashMap<Integer, Account> data = new HashMap<>();
-	Properties properties = new Properties();
 
-	public void getLogin() throws IOException {
+	public void getLogin() {
 		boolean end = false;
 		int customerNumber = 0;
 		int pinNumber = 0;
@@ -20,10 +26,8 @@ public class OptionMenu {
 				customerNumber = menuInput.nextInt();
 				System.out.print("\nEnter your PIN number: ");
 				pinNumber = menuInput.nextInt();
-				Iterator it = data.entrySet().iterator();
-				while (it.hasNext()) {
-					Map.Entry pair = (Map.Entry) it.next();
-					Account acc = (Account) pair.getValue();
+				for (Map.Entry<Integer, Account> integerAccountEntry : data.entrySet()) {
+					Account acc = (Account) ((Map.Entry<?, ?>) integerAccountEntry).getValue();
 					if (data.containsKey(customerNumber) && pinNumber == acc.getPinNumber()) {
 						getAccountType(acc);
 						end = true;
@@ -43,12 +47,13 @@ public class OptionMenu {
 		boolean end = false;
 		while (!end) {
 			try {
-				System.out.println("\nSelect the account you want to access: ");
-				System.out.println(" Type 1 - Checkings Account");
-				System.out.println(" Type 2 - Savings Account");
-				System.out.println(" Type 3 - Show Account Balances");
-				System.out.println(" Type 4 - Exit");
-				System.out.print("\nChoice: ");
+				System.out.print("\n\nSelect the account you want to access: " +
+									"\n Type 1 - Checkings Account" +
+									"\n Type 2 - Savings Account" +
+									"\n Type 3 - Show Account Balances" +
+									"\n Type 4 - Change PIN" +
+									"\n Type 5 - Exit" +
+									"\n\nChoice: ");
 
 				int selection = menuInput.nextInt();
 
@@ -64,6 +69,9 @@ public class OptionMenu {
 					System.out.println("Savings Account Balance: " + moneyFormat.format(acc.getSavingBalance()));
 					break;
 				case 4:
+					changePIN(acc);
+					break;
+				case 5:
 					end = true;
 					break;
 				default:
@@ -80,13 +88,14 @@ public class OptionMenu {
 		boolean end = false;
 		while (!end) {
 			try {
-				System.out.println("\nChecking Account: ");
-				System.out.println(" Type 1 - View Balance");
-				System.out.println(" Type 2 - Withdraw Funds");
-				System.out.println(" Type 3 - Deposit Funds");
-				System.out.println(" Type 4 - Transfer Funds");
-				System.out.println(" Type 5 - Exit");
-				System.out.print("\nChoice: ");
+				System.out.print("\nChecking Account: " +
+									"\n Type 1 - View Balance" +
+									"\n Type 2 - Withdraw Funds" +
+									"\n Type 3 - Deposit Funds" +
+									"\n Type 4 - Transfer Funds" +
+									"\n Type 5 - View Transaction History" +
+									"\n Type 6 - Back" +
+									"\n\nChoice: ");
 
 				int selection = menuInput.nextInt();
 
@@ -100,11 +109,14 @@ public class OptionMenu {
 				case 3:
 					acc.getCheckingDepositInput();
 					break;
-
 				case 4:
 					acc.getTransferInput("Checking");
 					break;
 				case 5:
+					String str = String.format("%s%s.log", acc.getCustomerNumber(), "checking");
+					System.out.printf("Transaction History\n\n%s%n", getTransactionHistory(str));
+					break;
+				case 6:
 					end = true;
 					break;
 				default:
@@ -121,17 +133,18 @@ public class OptionMenu {
 		boolean end = false;
 		while (!end) {
 			try {
-				System.out.println("\nSavings Account: ");
-				System.out.println(" Type 1 - View Balance");
-				System.out.println(" Type 2 - Withdraw Funds");
-				System.out.println(" Type 3 - Deposit Funds");
-				System.out.println(" Type 4 - Transfer Funds");
-				System.out.println(" Type 5 - Exit");
-				System.out.print("Choice: ");
+				System.out.print("\nSavings Account: " +
+									"\n Type 1 - View Balance" +
+									"\n Type 2 - Withdraw Funds" +
+									"\n Type 3 - Deposit Funds" +
+									"\n Type 4 - Transfer Funds" +
+									"\n Type 5 - View Transaction History" +
+									"\n Type 6 - Back" +
+									"\n\nChoice: ");
 				int selection = menuInput.nextInt();
 				switch (selection) {
 				case 1:
-					System.out.println("\nSavings Account Balance: " + moneyFormat.format(acc.getSavingBalance()));
+					System.out.printf("\nSavings Account Balance: %s", moneyFormat.format(acc.getSavingBalance()));
 					break;
 				case 2:
 					acc.getSavingWithdrawInput();
@@ -143,6 +156,10 @@ public class OptionMenu {
 					acc.getTransferInput("Savings");
 					break;
 				case 5:
+					String str = String.format("%s%s.log", acc.getCustomerNumber(), "savings");
+					System.out.printf("Transaction History\n\n%s%n", getTransactionHistory(str));
+					break;
+				case 6:
 					end = true;
 					break;
 				default:
@@ -155,18 +172,20 @@ public class OptionMenu {
 		}
 	}
 
-	public void createAccount() throws IOException {
+	private void changePIN(Account acc) {
+	}
+
+	public void createAccount() {
 		int cst_no = 0;
 		boolean end = false;
 		while (!end) {
 			try {
 				System.out.println("\nEnter your customer number ");
 				cst_no = menuInput.nextInt();
-				Iterator it = data.entrySet().iterator();
-				while (it.hasNext()) {
-					Map.Entry pair = (Map.Entry) it.next();
+				for (Map.Entry<Integer, Account> ignored : data.entrySet()) {
 					if (!data.containsKey(cst_no)) {
 						end = true;
+						break;
 					}
 				}
 				if (!end) {
@@ -185,9 +204,7 @@ public class OptionMenu {
 		getLogin();
 	}
 
-	public void mainMenu() throws IOException {
-//		data.put(952141, new Account(952141, 191904, 1000, 5000));
-//		data.put(123, new Account(123, 123, 20000, 50000));
+	public void mainMenu() {
 		readFromFile();
 		boolean end = false;
 		while (!end) {
@@ -236,7 +253,8 @@ public class OptionMenu {
 	}
 
 	public void readFromFile() {
-		try (BufferedReader br = new BufferedReader(new FileReader("users.txt"))) {
+		try (
+			BufferedReader br = new BufferedReader(new FileReader("users.txt"))) {
 			String line = null;
 			while ((line = br.readLine()) != null) {
 				String[] parts = line.split(":");
@@ -250,5 +268,21 @@ public class OptionMenu {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public String getTransactionHistory(String fileName) {
+		StringBuilder sb = new StringBuilder();
+
+		try (
+			BufferedReader br = new BufferedReader(new FileReader(fileName));) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				if (line.startsWith("INFO")) sb.append(line.substring(5)).append("\n");
+				else sb.append(line.substring(0, 23)).append("\t");
+			}
+		} catch (IOException e) {
+			System.out.println("bad thing");
+		}
+		return sb.toString();
 	}
 }

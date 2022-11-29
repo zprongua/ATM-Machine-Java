@@ -1,9 +1,8 @@
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.InputMismatchException;
 import java.util.Scanner;
+import java.util.logging.*;
 
 public class Account {
 	// variables
@@ -11,6 +10,7 @@ public class Account {
 	private int pinNumber;
 	private double checkingBalance = 0;
 	private double savingBalance = 0;
+	Logger logger = Logger.getLogger(Account.class.getName());
 
 	Scanner input = new Scanner(System.in);
 	DecimalFormat moneyFormat = new DecimalFormat("'$'###,##0.00");
@@ -28,11 +28,6 @@ public class Account {
 		this.pinNumber = pinNumber;
 		this.checkingBalance = checkingBalance;
 		this.savingBalance = savingBalance;
-	}
-
-	public int setCustomerNumber(int customerNumber) {
-		this.customerNumber = customerNumber;
-		return customerNumber;
 	}
 
 	public int getCustomerNumber() {
@@ -56,24 +51,20 @@ public class Account {
 		return savingBalance;
 	}
 
-	public double calcCheckingWithdraw(double amount) {
+	public void calcCheckingWithdraw(double amount) {
 		checkingBalance = (checkingBalance - amount);
-		return checkingBalance;
 	}
 
-	public double calcSavingWithdraw(double amount) {
+	public void calcSavingWithdraw(double amount) {
 		savingBalance = (savingBalance - amount);
-		return savingBalance;
 	}
 
-	public double calcCheckingDeposit(double amount) {
+	public void calcCheckingDeposit(double amount) {
 		checkingBalance = (checkingBalance + amount);
-		return checkingBalance;
 	}
 
-	public double calcSavingDeposit(double amount) {
+	public void calcSavingDeposit(double amount) {
 		savingBalance = (savingBalance + amount);
-		return savingBalance;
 	}
 
 	public void calcCheckTransfer(double amount) {
@@ -90,11 +81,15 @@ public class Account {
 		boolean end = false;
 		while (!end) {
 			try {
+				logger.setLevel(Level.INFO);
+				logger.addHandler(new FileHandler("/Users/zachary/Projects/ATM-Machine-Java/"+customerNumber+"checking.log", true));
+				logger.getHandlers()[0].setFormatter(new SimpleFormatter());
 				System.out.println("\nCurrent Checking Account Balance: " + moneyFormat.format(checkingBalance));
 				System.out.print("\nAmount you want to withdraw from Checking Account: ");
 				double amount = input.nextDouble();
 				if ((checkingBalance - amount) >= 0 && amount >= 0) {
 					calcCheckingWithdraw(amount);
+					logger.info(String.format("%s withdrawn. Balance %s", moneyFormat.format(amount), moneyFormat.format(checkingBalance)));
 					System.out.println("\nCurrent Checking Account Balance: " + moneyFormat.format(checkingBalance));
 					end = true;
 				} else {
@@ -103,6 +98,8 @@ public class Account {
 			} catch (InputMismatchException e) {
 				System.out.println("\nInvalid Choice.");
 				input.next();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
 			}
 		}
 	}
@@ -111,11 +108,14 @@ public class Account {
 		boolean end = false;
 		while (!end) {
 			try {
+				logger.setLevel(Level.INFO);
+				logger.addHandler(new FileHandler("/Users/zachary/Projects/ATM-Machine-Java/"+customerNumber+"savings.log", true));
 				System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingBalance));
 				System.out.print("\nAmount you want to withdraw from Savings Account: ");
 				double amount = input.nextDouble();
 				if ((savingBalance - amount) >= 0 && amount >= 0) {
 					calcSavingWithdraw(amount);
+					logger.info(String.format("%s withdrawn. Balance %s", moneyFormat.format(amount), moneyFormat.format(savingBalance)));
 					System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingBalance));
 					end = true;
 				} else {
@@ -124,6 +124,8 @@ public class Account {
 			} catch (InputMismatchException e) {
 				System.out.println("\nInvalid Choice.");
 				input.next();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
 			}
 		}
 	}
@@ -132,11 +134,14 @@ public class Account {
 		boolean end = false;
 		while (!end) {
 			try {
+				logger.setLevel(Level.INFO);
+				logger.addHandler(new FileHandler("/Users/zachary/Projects/ATM-Machine-Java/"+customerNumber+"checking.log", true));
 				System.out.println("\nCurrent Checking Account Balance: " + moneyFormat.format(checkingBalance));
 				System.out.print("\nAmount you want to deposit from Checking Account: ");
 				double amount = input.nextDouble();
 				if ((checkingBalance + amount) >= 0 && amount >= 0) {
 					calcCheckingDeposit(amount);
+					logger.info(String.format("%s deposited. Balance %s", moneyFormat.format(amount), moneyFormat.format(checkingBalance)));
 					System.out.println("\nCurrent Checking Account Balance: " + moneyFormat.format(checkingBalance));
 					end = true;
 				} else {
@@ -145,6 +150,8 @@ public class Account {
 			} catch (InputMismatchException e) {
 				System.out.println("\nInvalid Choice.");
 				input.next();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
 			}
 		}
 	}
@@ -153,12 +160,15 @@ public class Account {
 		boolean end = false;
 		while (!end) {
 			try {
+				logger.setLevel(Level.INFO);
+				logger.addHandler(new FileHandler(/*"/Users/zachary/Projects/ATM-Machine-Java/"+*/customerNumber+"savings.log", true));
 				System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingBalance));
 				System.out.print("\nAmount you want to deposit into your Savings Account: ");
 				double amount = input.nextDouble();
 
 				if ((savingBalance + amount) >= 0 && amount >= 0) {
 					calcSavingDeposit(amount);
+					logger.info(String.format("%s deposited. Balance %s", moneyFormat.format(amount), moneyFormat.format(savingBalance)));
 					System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingBalance));
 					end = true;
 				} else {
@@ -167,6 +177,8 @@ public class Account {
 			} catch (InputMismatchException e) {
 				System.out.println("\nInvalid Choice.");
 				input.next();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
 			}
 		}
 	}
@@ -234,12 +246,5 @@ public class Account {
 				input.next();
 			}
 		}
-	}
-
-	public static void writeToFile(int custNo, int pin, int checking, int saving) throws IOException {
-		BufferedWriter out = new BufferedWriter(new FileWriter("users.txt"));
-		out.write(custNo+ "#" +pin+ "#" +checking+ "#" +saving);
-		out.newLine();
-		out.close();
 	}
 }
